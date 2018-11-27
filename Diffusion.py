@@ -7,7 +7,7 @@ from bokeh.io import output_notebook, show
 from ndlib.viz.bokeh.DiffusionTrend import DiffusionTrend
 import ndlib.models.epidemics.ThresholdModel as th
 from ndlib.viz.bokeh.DiffusionPrevalence import DiffusionPrevalence
-
+import numpy
 vm = MultiPlot()
 
 g = nx.barabasi_albert_graph(1000,3)
