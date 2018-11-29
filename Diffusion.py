@@ -7,6 +7,9 @@ from bokeh.io import output_notebook, show
 from ndlib.viz.bokeh.DiffusionTrend import DiffusionTrend
 import ndlib.models.epidemics.ThresholdModel as th
 from ndlib.viz.bokeh.DiffusionPrevalence import DiffusionPrevalence
+import ndlib.models.epidemics.SIModel as si
+
+import ndlib.models.epidemics.SISModel as sis
 import numpy
 vm = MultiPlot()
 
@@ -28,9 +31,9 @@ trends=IDCS.build_trends(iterations)
 #Diﬀusion Trend plots describe the evolution of a diﬀusion process as time goes by from the classes distribution point of view
 #Diffusion Prevalence one that captures, for each iteration, the variation of the nodes of each class
 plot1=DiffusionTrend(IDCS, trends).plot(width=400, height=400)
-plot3=DiffusionPrevalence(IDCS, trends).plot(width=400, height=400)
+plot2=DiffusionPrevalence(IDCS, trends).plot(width=400, height=400)
 vm.add_plot(plot1)
-
+vm.add_plot(plot2)
 #------------------------------------------------------
 
 #In this model during an epidemics, a node has two distinct and mutually exclusive behavioral alternatives,
@@ -51,14 +54,83 @@ Thr.set_initial_status(config)
 iterations=Thr.iteration_bunch(10, 0)
 print(Thr.get_info())
 trends=Thr.build_trends(iterations)
-plot2=DiffusionTrend(Thr, trends).plot(width=400, height=400)
+plot3=DiffusionTrend(Thr, trends).plot(width=400, height=400)
 plot4=DiffusionPrevalence(Thr, trends).plot(width=400, height=400)
-vm.add_plot(plot2)
 vm.add_plot(plot3)
 vm.add_plot(plot4)
 
+
+
+
+#SI assumes that if, during a generic iteration, a susceptible node comes into contact with an infected one,
+# it becomes infected with probability β: once a node becomes infected, it stays infected (the only transition allowed is S→I).
+model = si.SIModel(g)
+
+# Model Configuration
+cfg = m.Configuration()
+cfg.add_model_parameter('beta', 0.01)
+cfg.add_model_parameter("percentage_infected", 0.05)
+model.set_initial_status(cfg)
+iterations = model.iteration_bunch(200)
+trends=model.build_trends(iterations)
+plot5=DiffusionTrend(model, trends).plot(width=400, height=400)
+plot6=DiffusionPrevalence(model, trends).plot(width=400, height=400)
+vm.add_plot(plot5)
+vm.add_plot(plot6)
+
+model = sis.SISModel(g)
+
+# Model Configuration
+cfg = m.Configuration()
+cfg.add_model_parameter('beta', 0.02)
+cfg.add_model_parameter('lambda', 0.01)
+cfg.add_model_parameter("percentage_infected", 0.05)
+model.set_initial_status(cfg)
+
+# Simulation execution
+iterations = model.iteration_bunch(200)
+trends=model.build_trends(iterations)
+plot7=DiffusionTrend(model, trends).plot(width=400, height=400)
+plot8=DiffusionPrevalence(model, trends).plot(width=400, height=400)
+
+vm.add_plot(plot7)
+vm.add_plot(plot8)
+
+
+#---------------------------------------------------------------------------------
+
+
+# for each of the susceptible nodes’ in the neighborhood of a node u in S an unbalanced coin is flipped, the unbalance given by the personal profile of the susceptible node;
+# if a positive result is obtained the susceptible node will adopt the behaviour, thus becoming infected.
+# if the blocked status is enabled, after having rejected the adoption with probability blocked a node becomes immune to the infection.
+# every iteration adopter_rate percentage of nodes spontaneous became infected to endogenous effects.
+
+import ndlib.models.epidemics.ProfileModel as pr
+
+model = pr.ProfileModel(g)
+config = m.Configuration()
+config.add_model_parameter('blocked', 0)
+config.add_model_parameter('adopter_rate', 0)
+config.add_model_parameter('percentage_infected', 0.1)
+
+# Setting nodes parameters
+profile = 0.15
+for i in g.nodes():
+    config.add_node_configuration("profile", i, profile)
+
+
+model.set_initial_status(config)
+
+# Simulation execution
+iterations = model.iteration_bunch(200)
+
+trends=model.build_trends(iterations)
+plot9=DiffusionTrend(model, trends).plot(width=400, height=400)
+plot10=DiffusionPrevalence(model, trends).plot(width=400, height=400)
+
+vm.add_plot(plot9)
+vm.add_plot(plot10)
+
+
 m = vm.plot()
 show(m)
-
-
-
