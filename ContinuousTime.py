@@ -71,9 +71,9 @@ class ContinousTime(DiffusionModel):
                 if self.params['model']['last'] > self.actual_iteration:
                     break
                 neighbors = list(self.graph.neighbors(u))
-                Time1=self.actual_iteration
+                Time1=self.actual_iteration #Intial U Activation
                 for v in neighbors:
-                    self.actual_iteration += 1
+                    self.actual_iteration += 1  # Increasing Time Here according
                     if actual_status[v] == 0:
                         key = (u, v)
 
@@ -84,13 +84,13 @@ class ContinousTime(DiffusionModel):
                                 alpha = self.params['edges']['threshold'][(v, u)]
 
                         Time2=self.actual_iteration
-                        equation1=-(alpha)*(Time2-Time1)
+                        equation1=-(alpha)*(Time2-Time1)  #Measure the Tume between adjacent actvations
                         equation2=equation1*alpha
 
                         flip = np.random.random_sample()
 
                         if equation2 >= flip:
-                            actual_status[v]=1
+                            actual_status[v]=1  #Could not infect anymore
 
                 delta, node_count, status_delta = self.status_delta(actual_status)
                 self.status = actual_status
