@@ -4,6 +4,11 @@ import future.utils
 import networkx as nx
 import math
 
+#Here The Only difference from Continuous Time Diffusion Model is the node can itself deactivate as denoted by status 2
+
+
+
+
 class DynaDiffusion(DiffusionModel):
 
 
