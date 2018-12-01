@@ -8,7 +8,8 @@ from ndlib.viz.bokeh.DiffusionTrend import DiffusionTrend
 import ndlib.models.epidemics.ThresholdModel as th
 from ndlib.viz.bokeh.DiffusionPrevalence import DiffusionPrevalence
 import ndlib.models.epidemics.SIModel as si
-
+from ContinuousTime import ContinuousTime
+import sys
 import ndlib.models.epidemics.SISModel as sis
 import numpy
 vm = MultiPlot()
@@ -52,7 +53,7 @@ for i in g.nodes():
 
 Thr.set_initial_status(config)
 iterations=Thr.iteration_bunch(10, 0)
-print(Thr.get_info())
+print(Thr.get_info(), iterations)
 trends=Thr.build_trends(iterations)
 plot3=DiffusionTrend(Thr, trends).plot(width=400, height=400)
 plot4=DiffusionPrevalence(Thr, trends).plot(width=400, height=400)
@@ -131,6 +132,21 @@ plot10=DiffusionPrevalence(model, trends).plot(width=400, height=400)
 vm.add_plot(plot9)
 vm.add_plot(plot10)
 
+#--------------------------------------------------------------
+#Continuous time model
+Cont=ContinuousTime(g)
+config=m.Configuration()
+config.add_model_parameter("percentage_infected",0.2)
+
+Cont.set_initial_status(config)
+iterations=Cont.iteration_bunch(10, 0)
+print(Cont.get_info())
+sys.exit()
+trends=Cont.build_trends(iterations)
+plot5=DiffusionTrend(Cont, trends).plot(width=400, height=400)
+plot6=DiffusionPrevalence(Cont, trends).plot(width=400, height=400)
+vm.add_plot(plot5)
+vm.add_plot(plot6)
 
 m = vm.plot()
 show(m)

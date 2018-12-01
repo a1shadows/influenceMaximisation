@@ -2,9 +2,9 @@ from ndlib.models.DiffusionModel import DiffusionModel
 import numpy as np
 import future.utils
 import networkx as nx
+import time
 
-
-class ContinousTime(DiffusionModel):
+class ContinuousTime(DiffusionModel):
 
 
     def __init__(self, graph):
@@ -65,15 +65,14 @@ class ContinousTime(DiffusionModel):
 
 
             for u in self.graph.nodes():
-                self.actual_iteration+=1
                 if self.status[u] != 1:
                     continue
                 if self.params['model']['last'] > self.actual_iteration:
                     break
                 neighbors = list(self.graph.neighbors(u))
-                Time1=self.actual_iteration
+                Time1 = time.time()
                 for v in neighbors:
-                    self.actual_iteration += 1
+                    #self.actual_iteration += 1
                     if actual_status[v] == 0:
                         key = (u, v)
 
@@ -83,7 +82,7 @@ class ContinousTime(DiffusionModel):
                             elif (v, u) in self.params['edges']['alpha'] and not nx.is_directed(self.graph):
                                 alpha = self.params['edges']['threshold'][(v, u)]
 
-                        Time2=self.actual_iteration
+                        Time2 = time.time()
                         equation1=-(alpha)*(Time2-Time1)
                         equation2=equation1*alpha
 
