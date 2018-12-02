@@ -57,7 +57,7 @@ class TimeAware(DiffusionModel):
                 if actual_status[u]!=1:  #Check if not  Infected
                     continue
 
-                if self.params['nodes'['Time'][u]!=0:  
+                if self.params['nodes']['Time'][u]!=0:
                     Time=time.time()
                     self.params['nodes']['Time'][u]= Time 
                 else:
