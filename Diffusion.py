@@ -12,6 +12,7 @@ from ContinuousTime import ContinuousTime
 import sys
 import ndlib.models.epidemics.SISModel as sis
 import numpy
+from TimeAware import TimeAware
 vm = MultiPlot()
 
 g = nx.barabasi_albert_graph(1000,3)
@@ -134,13 +135,14 @@ vm.add_plot(plot10)
 
 #--------------------------------------------------------------
 #Continuous time model
-Cont=ContinuousTime(g)
+Cont=TimeAware(g)
 config=m.Configuration()
 config.add_model_parameter("percentage_infected",0.2)
 
 Cont.set_initial_status(config)
 iterations=Cont.iteration_bunch(10, 0)
 print(Cont.get_info())
+#sys.exit()
 trends=Cont.build_trends(iterations)
 plot5=DiffusionTrend(Cont, trends).plot(width=400, height=400)
 plot6=DiffusionPrevalence(Cont, trends).plot(width=400, height=400)

@@ -1,5 +1,8 @@
 from ndlib.models.DiffusionModel import DiffusionModel
 import time
+import future.utils
+import numpy as np
+import math 
 class TimeAware(DiffusionModel):
 
         def __init__(self, graph):
@@ -38,6 +41,8 @@ class TimeAware(DiffusionModel):
         def iteration(self, node_status=True):
 
             self.clean_initial_status(self.available_statuses.values())
+            
+            actual_status = {node: nstatus for node, nstatus in future.utils.iteritems(self.status)} #Copy of Statuses
 
             # if first iteration return the initial node status
             if self.actual_iteration == 0:
@@ -50,16 +55,16 @@ class TimeAware(DiffusionModel):
                             return {"iteration": 0, "status": {},
                                             "node_count": node_count.copy(), "status_delta": status_delta.copy()}
 
-            actual_status = {node: nstatus for node, nstatus in self.status.iteritems()}   #Copy of Statuses
+            
 
             # iteration inner loop
             for u in self.graph.nodes():
                 if actual_status[u]!=1:  #Check if not  Infected
                     continue
 
-                if self.params['nodes']['Time'][u]!=0:
+                if self.params['nodes']['Time'][u]==0:  
                     Time=time.time()
-                    self.params['nodes']['Time'][u]= Time 
+                    self.params['nodes']['Time'][u]=Time 
                 else:
                     Time=self.params['nodes']['Time'][u]
                 
@@ -69,15 +74,18 @@ class TimeAware(DiffusionModel):
                     if actual_status[v]==1: #If already Infected Continue
                         continue 
 
-                    if(self.params['nodes'['Time'][v]!=0):
+                    if(self.params['nodes']['Time'][v]==0):
                         Time1=time.time()
-                        self.params['nodes']['Time'][v]= Time 
+                        self.params['nodes']['Time'][v]= Time1 
                     else:
-                        Time1=self.param[s'nodes']['Time'][v]
-
+                        Time1=self.params['nodes']['Time'][v]
+                    if (u,v) not in self.params['edges']['alpha']:
+                        continue
                     Alpha=self.params['edges']['alpha'][(u, v)]
                     Equation1= -Alpha*(Time1-Time)
-                    Equation2= Equation1 * Alpha  #Combine Equation
+                    Equation2= Alpha *(math.e**Equation1)
+
+                    print(Equation2)
 
                     flip = np.random.random_sample()
                     if(Equation2>=flip):
