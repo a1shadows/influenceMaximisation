@@ -11,6 +11,8 @@ class ContinuousTime(DiffusionModel):
         # Call the super class constructor
         super(self.__class__, self).__init__(graph)
 
+        # Init time
+
         # Method name
         self.name = "ContinuousTime"
 
@@ -67,7 +69,7 @@ class ContinuousTime(DiffusionModel):
             for u in self.graph.nodes():
                 if self.status[u] != 1:
                     continue
-                if self.params['model']['last'] > self.actual_iteration:
+                if self.params['model']['last'] > time.time():
                     break
                 neighbors = list(self.graph.neighbors(u))
                 Time1 = time.time()
@@ -78,9 +80,9 @@ class ContinuousTime(DiffusionModel):
 
                         if 'alpha' in self.params['edges']:
                             if key in self.params['edges']['alpha']:
-                                alpha = self.params['edges']['threshold'][key]
+                                alpha = self.params['edges']['alpha'][key]
                             elif (v, u) in self.params['edges']['alpha'] and not nx.is_directed(self.graph):
-                                alpha = self.params['edges']['threshold'][(v, u)]
+                                alpha = self.params['edges']['alpha'][(v, u)]
 
                         Time2 = time.time()
                         equation1=-(alpha)*(Time2-Time1)
