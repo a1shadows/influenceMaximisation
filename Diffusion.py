@@ -16,6 +16,9 @@ import ndlib.models.epidemics.SISModel as sis
 import ndlib.models.epidemics.GeneralisedThresholdModel as gth
 import ndlib.models.opinions.AlgorithmicBiasModel as ab
 import numpy
+import ndlib.models.opinions.MajorityRuleModel as mr
+
+
 from TimeAware import TimeAware
 import ndlib.models.epidemics.SWIRModel as swir
 from DynaDiff import DynaDiff
@@ -247,7 +250,7 @@ cfg.add_model_parameter('beta', 0.01)
 cfg.add_model_parameter('gamma', 0.005)
 cfg.add_model_parameter('alpha', 0.05)
 cfg.add_model_parameter("percentage_infected", 0.05)
-model.set_initial_status(cfg)
+SEIRI.set_initial_status(cfg)
 
 iterations=SEIRI.iteration_bunch(200)
 
@@ -261,9 +264,28 @@ plotSE2=DiffusionPrevalence(SEIRI, trends).plot(width=400, height=400)
 vm.add_plot(plotSE1)
 vm.add_plot(plotSE2)
 
+#The Majority Rule model is a discrete model of opinion dynamics, proposed to describe public debates [1].
+#Agents take discrete opinions ±1, just like the Voter model. At each time step a group of r agents is selected randomly and they all take the majority opinion within the group.
+#The group size can be fixed or taken at each time step from a specific distribution. If r is odd, then the majority opinion is always defined, however if r is even there could be tied situations. To select a prevailing opinion in this case, a bias in favour of one opinion (+1) is introduced.
+#This idea is inspired by the concept of social inertia
 
 
 
+
+Majority = mr.MajorityRuleModel(g)
+config = m.Configuration()
+config.add_model_parameter('percentage_infected', 0.1)
+config.add_model_parameter('q',20)
+
+Majority.set_initial_status(config)
+
+trends=Majority.build_trends(iterations)
+
+plotMAJ1=DiffusionTrend(Majority,trends).plot(width=400,height=400)
+plotMAJ2=DiffusionPrevalence(Majority,trends).plot(width=400,height=400)
+
+vm.add_plot(plotMAJ1)
+vm.add_plot(plotMAJ2)
 #--------------------------------------------------------------
 #Continuous time model
 Cont=TimeAware(g)
