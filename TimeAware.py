@@ -59,7 +59,7 @@ class TimeAware(DiffusionModel):
 
             # iteration inner loop
             for u in self.graph.nodes():
-                if actual_status[u]!=1:  #Check if not  Infected
+                if actual_status[u] == 1:  #Check if not  Infected
                     continue
 
                 if self.params['nodes']['Time'][u]==0:  

@@ -7,17 +7,17 @@ from bokeh.io import output_notebook, show
 from ndlib.viz.bokeh.DiffusionTrend import DiffusionTrend
 import ndlib.models.epidemics.ThresholdModel as th
 from ndlib.viz.bokeh.DiffusionPrevalence import DiffusionPrevalence
+import ndlib.models.epidemics.SEIRModel as seir
 import ndlib.models.epidemics.SIModel as si
-from ContinuousTime import ContinuousTime
-import sys
 import ndlib.models.opinions.VoterModel as vt
 import ndlib.models.epidemics.SISModel as sis
-import ndlib.models.epidemics.GeneralisedThresholdModel as gth
-import numpy
+import ndlib.models.opinions.AlgorithmicBiasModel as ab
+import ndlib.models.opinions.MajorityRuleModel as mr
 from TimeAware import TimeAware
-from DynaDiff import DynaDiff
-vm = MultiPlot()
+from Triggering import Triggering
+import ndlib.models.epidemics.SWIRModel as swir
 
+vm = MultiPlot()
 g = nx.barabasi_albert_graph(1000,3)
 
 
@@ -59,7 +59,7 @@ for i in g.nodes():
 
 Thr.set_initial_status(config)
 iterations=Thr.iteration_bunch(10, 0)
-print(Thr.get_info(), iterations)
+print(Thr.get_info())
 trends=Thr.build_trends(iterations)
 plot3=DiffusionTrend(Thr, trends).plot(width=400, height=400)
 plot4=DiffusionPrevalence(Thr, trends).plot(width=400, height=400)
@@ -68,35 +68,6 @@ vm.add_plot(plot4)
 
 #--------------------------------------------------------
 
-
-#he model is instantiated on a graph having a non-empty set of infected nodes.
-
-#The model is defined as follows:
-
-#At time t nodes become Infected with rate mu t/tau
-#Nodes for which the ratio of the active friends dropped below the threshold are moved to the Infected queue
-#Nodes in the Infected queue become infected with rate tau. If this happens check all its friends for threshold
-
-
-
-Generalised = gth.GeneralisedThresholdModel(g)
-config = mc.Configuration()
-config.add_model_parameter('percentage_infected', 0.1)
-config.add_model_parameter('tau', 5)
-config.add_model_parameter('mu', 5)
-
-threshold = 0.25
-for i in g.nodes():
-    config.add_node_configuration("threshold", i, threshold)
-
-Generalised.set_initial_status(config)
-iterations = model.iteration_bunch(10,0)
-print(Generalised.get_info(), iterations)
-trends=Generalised.build_trends(iterations)
-plotX=DiffusionTrend(Generalised,trends).plot(width=400,height=400)
-plotY=DiffusionPrevalence(Generalised,trends).plot(width=400,height=400)
-vm.add_plot(plotX)
-vm.add_plot(plotY)
 
 
 
@@ -140,7 +111,7 @@ vm.add_plot(plot8)
 #Starting from any initial configuration, on a complete network the entire population converges to consensus on one of the two options. The probability that consensus is reached on opinion +1 is equal to the initial fraction of individuals holding that opinion [3].
 
 Voter = vt.VoterModel(g)
-config = mc.Configuration()
+config = m.Configuration()
 config.add_model_parameter('percentage_infected', 0.1)
 
 Voter.set_initial_status(config)
@@ -161,7 +132,7 @@ vm.add_plot(plotX2)
 import ndlib.models.opinions.SznajdModel as sn
 
 Sznajd=sn.SznajdModel(g)
-config = mc.Configuration()
+config = m.Configuration()
 config.add_model_parameter('percentage_infected', 0.1)
 Sznajd.set_initial_status(config)
 iterations=Sznajd.iteration_bunch(200)
@@ -207,21 +178,138 @@ plot10=DiffusionPrevalence(model, trends).plot(width=400, height=400)
 vm.add_plot(plot9)
 vm.add_plot(plot10)
 
+
+#The Algorithmic Bias model considers a population of individuals, where each individual holds a continuous opinion in the interval [0,1].
+ #Individuals are connected by a social network, and interact pairwise at discrete time steps. The interacting pair is selected from the population at each time point in
+ #such a way that individuals that have close opinion values are selected more often, to simulate algorithmic bias.
+ #The parameter gamma controls how large this effect is. Specifically, the first individual in the interacting pair is selected randomly,
+ #while the second individual is selected based on a probability that decreases with the distance from the opinion of the first individual,
+ #i.e. directly proportional with the distance raised to the power -gamma.
+
+# After interaction, the two opinions may change, depending on a so called bounded confidence parameter, epsilon. This can be seen as a measure of the open-mindedness of individuals in a population.
+
+
+Algorithmic = ab.AlgorithmicBiasModel(g)
+
+config = m.Configuration()
+config.add_model_parameter("epsilon", 0.02)
+config.add_model_parameter("gamma", 1)
+config.add_model_parameter('percentage_infected', 0.2)
+Algorithmic.set_initial_status(config)
+
+iterations=Algorithmic.iteration_bunch(200,0)
+
+trends=Algorithmic.build_trends(iterations)
+plotA1=DiffusionTrend(Algorithmic,trends).plot(width=400,height=400)
+plotA2=DiffusionPrevalence(Algorithmic,trends).plot(width=400,height=400)
+vm.add_plot(plotA1)
+vm.add_plot(plotA2)
+
+#In this model, during the epidemics, a node is allowed to change its status from Susceptible (S) to Weakened (W) or Infected (I), then to Removed (R).
+
+#The model is instantiated on a graph having a non-empty set of infected nodes.
+
+#At time t a node in the state I is selected randomly and the states of all neighbors are checked one by one.
+# If the state of a neighbor is S then this state changes either i) to I with probability kappa or ii) to W with probability mu. If the state of a neighbor is W
+#then the state W changes to I with probability nu.
+#We repeat the above process for all nodes in state I and then changes to R for each associated node.
+
+SWIREN = swir.SWIRModel(g)
+cfg = m.Configuration()
+cfg.add_model_parameter('kappa', 0.01)
+cfg.add_model_parameter('mu', 0.005)
+cfg.add_model_parameter('nu', 0.05)
+cfg.add_model_parameter("percentage_infected", 0.05)
+
+SWIREN.set_initial_status(cfg)
+iterations = SWIREN.iteration_bunch(200,0)
+
+trends=SWIREN.build_trends(iterations)
+
+plotSW1=DiffusionTrend(SWIREN,trends).plot(width=400,height=400)
+plotSW2=DiffusionPrevalence(SWIREN,trends).plot(width=400,height=400)
+vm.add_plot(plotSW1)
+vm.add_plot(plotSW2)
+
+
+#In the SEIR model [1], during the course of an epidemics, a node is allowed to change its status from Susceptible (S) to Exposed (E) to Infected (I), then to Removed (R).
+#The model is instantiated on a graph having a non-empty set of infected nodes.
+#SEIR assumes that if, during a generic iteration, a susceptible node comes into contact with an infected one,
+#it becomes infected after an exposition period with probability beta, than it can switch to removed with probability gamma (the only transition allowed are S→E→I→R).
+
+SEIRI = seir.SEIRModel(g)
+
+cfg = m.Configuration()
+cfg.add_model_parameter('beta', 0.01)
+cfg.add_model_parameter('gamma', 0.005)
+cfg.add_model_parameter('alpha', 0.05)
+cfg.add_model_parameter("percentage_infected", 0.05)
+SEIRI.set_initial_status(cfg)
+
+iterations=SEIRI.iteration_bunch(200)
+
+print(SEIRI.get_info())
+
+trends=SEIRI.build_trends(iterations)
+
+plotSE1=DiffusionTrend(SEIRI, trends).plot(width=400, height=400)
+plotSE2=DiffusionPrevalence(SEIRI, trends).plot(width=400, height=400)
+
+vm.add_plot(plotSE1)
+vm.add_plot(plotSE2)
+
+#The Majority Rule model is a discrete model of opinion dynamics, proposed to describe public debates [1].
+#Agents take discrete opinions ±1, just like the Voter model. At each time step a group of r agents is selected randomly and they all take the majority opinion within the group.
+#The group size can be fixed or taken at each time step from a specific distribution. If r is odd, then the majority opinion is always defined, however if r is even there could be tied situations. To select a prevailing opinion in this case, a bias in favour of one opinion (+1) is introduced.
+#This idea is inspired by the concept of social inertia
+
+
+
+
+Majority = mr.MajorityRuleModel(g)
+config = m.Configuration()
+config.add_model_parameter('percentage_infected', 0.1)
+config.add_model_parameter('q',20)
+
+Majority.set_initial_status(config)
+
+trends=Majority.build_trends(iterations)
+
+plotMAJ1=DiffusionTrend(Majority,trends).plot(width=400,height=400)
+plotMAJ2=DiffusionPrevalence(Majority,trends).plot(width=400,height=400)
+
+vm.add_plot(plotMAJ1)
+vm.add_plot(plotMAJ2)
 #--------------------------------------------------------------
 #Continuous time model
-Cont=DynaDiff(g)
+TAmodel=TimeAware(g)
 config=m.Configuration()
 config.add_model_parameter("percentage_infected",0.2)
 
-Cont.set_initial_status(config)
-iterations=Cont.iteration_bunch(10, 0)
-print(Cont.get_info())
-#sys.exit()
-trends=Cont.build_trends(iterations)
-plot5=DiffusionTrend(Cont, trends).plot(width=400, height=400)
-plot6=DiffusionPrevalence(Cont, trends).plot(width=400, height=400)
+TAmodel.set_initial_status(config)
+iterations=TAmodel.iteration_bunch(10, 0)
+print(TAmodel.get_info())
+trends=TAmodel.build_trends(iterations)
+plot5=DiffusionTrend(TAmodel, trends).plot(width=400, height=400)
+plot6=DiffusionPrevalence(TAmodel, trends).plot(width=400, height=400)
 vm.add_plot(plot5)
 vm.add_plot(plot6)
+
+#--------------------------------------------------------------
+#Triggering Model
+
+Trigg=Triggering(g)
+config=m.Configuration()
+config.add_model_parameter("percentage_infected",0.2)
+
+Trigg.set_initial_status(config)
+iterations=Trigg.iteration_bunch(10, 0)
+print(Trigg.get_info(), iterations)
+trends=Trigg.build_trends(iterations)
+plotTrigg1=DiffusionTrend(Trigg, trends).plot(width=400, height=400)
+plotTrigg2=DiffusionPrevalence(Trigg, trends).plot(width=400, height=400)
+vm.add_plot(plotTrigg1)
+vm.add_plot(plotTrigg2)
 
 m = vm.plot()
 show(m)
