@@ -66,9 +66,11 @@ class Triggering(DiffusionModel):
                     flip = np.random.random_sample()
                     iter_no = self.params['nodes']['iterActivated'][v]
                     prob = self.params['nodes']['probability'][v]
+                    print(iter_no,self.actual_iteration,prob,flip)
                     if prob <= flip and iter_no == self.actual_iteration - 1 and \
                             actual_status[v] == 1:
-                        #actual_status[u] = 1
+                        actual_status[u] = 1
+                
                         self.params['nodes']['iterActivated'][u] = self.actual_iteration
                         break
 
