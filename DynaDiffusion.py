@@ -1,8 +1,10 @@
-from ndlib.models.DiffusionModel import DiffusionModel
-import numpy as np
+import math
+
 import future.utils
 import networkx as nx
-import math
+import numpy as np
+from ndlib.models.DiffusionModel import DiffusionModel
+
 
 #Here The Only difference from Continuous Time Diffusion Model is the node can itself deactivate as denoted by status 2
 
