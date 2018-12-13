@@ -15,10 +15,11 @@ import ndlib.models.opinions.AlgorithmicBiasModel as ab
 import ndlib.models.opinions.MajorityRuleModel as mr
 from TimeAware import TimeAware
 from Triggering import Triggering
+from DiffDyna import DynaDiffuse
 import ndlib.models.epidemics.SWIRModel as swir
 
 vm = MultiPlot()
-g = nx.barabasi_albert_graph(1000,3)
+g = nx.barabasi_albert_graph(10000,3)
 
 
 #When node v becomes active in step t, it is given a single chance to activate each currently inactive neighbor w; it succeeds with a probability p(v,w).
@@ -29,7 +30,7 @@ IDCS = ids.IndependentCascadesModel(g)
 config= m.Configuration()
 config.add_model_parameter("percentage_infected",0.20)
 for e in g.edges():
-    config.add_edge_configuration("threshold",e,0.6)
+    config.add_edge_configuration("threshold",e,0.4)
 
 IDCS.set_initial_status(config)
 iterations=IDCS.iteration_bunch(10, 0)
@@ -80,7 +81,7 @@ cfg = m.Configuration()
 cfg.add_model_parameter('beta', 0.01)
 cfg.add_model_parameter("percentage_infected", 0.05)
 model.set_initial_status(cfg)
-iterations = model.iteration_bunch(200)
+iterations = model.iteration_bunch(100)
 trends=model.build_trends(iterations)
 plot5=DiffusionTrend(model, trends).plot(width=400, height=400)
 plot6=DiffusionPrevalence(model, trends).plot(width=400, height=400)
@@ -97,7 +98,7 @@ cfg.add_model_parameter("percentage_infected", 0.05)
 model.set_initial_status(cfg)
 
 # Simulation execution
-iterations = model.iteration_bunch(200)
+iterations = model.iteration_bunch(100)
 trends=model.build_trends(iterations)
 plot7=DiffusionTrend(model, trends).plot(width=400, height=400)
 plot8=DiffusionPrevalence(model, trends).plot(width=400, height=400)
@@ -116,7 +117,7 @@ config.add_model_parameter('percentage_infected', 0.1)
 
 Voter.set_initial_status(config)
 
-iterations=Voter.iteration_bunch(200)
+iterations=Voter.iteration_bunch(100)
 trends=Voter.build_trends(iterations)
 plotX1=DiffusionTrend(Voter,trends).plot(width=400,height=400)
 plotX2=DiffusionPrevalence(Voter,trends).plot(width=400,height=400)
@@ -125,7 +126,7 @@ vm.add_plot(plotX1)
 vm.add_plot(plotX2)
 
 
-#The Sznajd model [1] is a variant of spin model employing the theory of social impact, which takes into account the fact that a group of individuals with the same opinion can influence their neighbours more than one single individual.
+#The Sznajd mode is a variant of spin model employing the theory of social impact, which takes into account the fact that a group of individuals with the same opinion can influence their neighbours more than one single individual.
 #In the original model the social network is a 2-dimensional lattice, however we also implemented the variant on any complex networks.
 #Each agent has an opinion σi = ±1. At each time step, a pair of neighbouring agents is selected and, if their opinion coincides, all their neighbours take that opinion.
 #The model has been shown to converge to one of the two agreeing stationary states, depending on the initial density of up-spins (transition at 50% density).
@@ -135,7 +136,7 @@ Sznajd=sn.SznajdModel(g)
 config = m.Configuration()
 config.add_model_parameter('percentage_infected', 0.1)
 Sznajd.set_initial_status(config)
-iterations=Sznajd.iteration_bunch(200)
+iterations=Sznajd.iteration_bunch(100)
 trends=Sznajd.build_trends(iterations)
 plotX3=DiffusionTrend(Sznajd,trends).plot(width=400,height=400)
 plotX4=DiffusionPrevalence(Voter,trends).plot(width=400,height=400)
@@ -169,7 +170,7 @@ for i in g.nodes():
 model.set_initial_status(config)
 
 # Simulation execution
-iterations = model.iteration_bunch(200)
+iterations = model.iteration_bunch(100)
 
 trends=model.build_trends(iterations)
 plot9=DiffusionTrend(model, trends).plot(width=400, height=400)
@@ -197,7 +198,7 @@ config.add_model_parameter("gamma", 1)
 config.add_model_parameter('percentage_infected', 0.2)
 Algorithmic.set_initial_status(config)
 
-iterations=Algorithmic.iteration_bunch(200,0)
+iterations=Algorithmic.iteration_bunch(100,0)
 
 trends=Algorithmic.build_trends(iterations)
 plotA1=DiffusionTrend(Algorithmic,trends).plot(width=400,height=400)
@@ -222,7 +223,7 @@ cfg.add_model_parameter('nu', 0.05)
 cfg.add_model_parameter("percentage_infected", 0.05)
 
 SWIREN.set_initial_status(cfg)
-iterations = SWIREN.iteration_bunch(200,0)
+iterations = SWIREN.iteration_bunch(100,0)
 
 trends=SWIREN.build_trends(iterations)
 
@@ -246,7 +247,7 @@ cfg.add_model_parameter('alpha', 0.05)
 cfg.add_model_parameter("percentage_infected", 0.05)
 SEIRI.set_initial_status(cfg)
 
-iterations=SEIRI.iteration_bunch(200)
+iterations=SEIRI.iteration_bunch(100)
 
 print(SEIRI.get_info())
 
@@ -287,13 +288,16 @@ config=m.Configuration()
 config.add_model_parameter("percentage_infected",0.2)
 
 TAmodel.set_initial_status(config)
-iterations=TAmodel.iteration_bunch(10, 0)
+iterations=TAmodel.iteration_bunch(100, 0)
 print(TAmodel.get_info())
 trends=TAmodel.build_trends(iterations)
 plot5=DiffusionTrend(TAmodel, trends).plot(width=400, height=400)
 plot6=DiffusionPrevalence(TAmodel, trends).plot(width=400, height=400)
 vm.add_plot(plot5)
 vm.add_plot(plot6)
+
+
+
 
 #--------------------------------------------------------------
 #Triggering Model
@@ -303,13 +307,28 @@ config=m.Configuration()
 config.add_model_parameter("percentage_infected",0.2)
 
 Trigg.set_initial_status(config)
-iterations=Trigg.iteration_bunch(10, 0)
+iterations=Trigg.iteration_bunch(100, 0)
 print(Trigg.get_info(), iterations)
 trends=Trigg.build_trends(iterations)
 plotTrigg1=DiffusionTrend(Trigg, trends).plot(width=400, height=400)
 plotTrigg2=DiffusionPrevalence(Trigg, trends).plot(width=400, height=400)
 vm.add_plot(plotTrigg1)
 vm.add_plot(plotTrigg2)
+#----------------Dyna Diffusiion-----------------------
+TAmodel23=DynaDiffuse(g)
+config=m.Configuration()
+config.add_model_parameter("percentage_infected",0.2)
+
+TAmodel23.set_initial_status(config)
+iterations=TAmodel23.iteration_bunch(100, 0)
+print(TAmodel23.get_info())
+trends=TAmodel23.build_trends(iterations)
+plot5=DiffusionTrend(TAmodel23, trends).plot(width=400, height=400)
+plot6=DiffusionPrevalence(TAmodel23, trends).plot(width=400, height=400)
+vm.add_plot(plot5)
+vm.add_plot(plot6)
+
+
 
 m = vm.plot()
 show(m)
