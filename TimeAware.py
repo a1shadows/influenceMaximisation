@@ -47,6 +47,11 @@ class TimeAware(DiffusionModel):
             # if first iteration return the initial node status
             if self.actual_iteration == 0:
                     self.actual_iteration += 1
+                    
+                    for u in self.graph.nodes():
+                        timeActivated = time.time()
+                        self.params['nodes']['Time'][u] = timeActivated
+
                     delta, node_count, status_delta = self.status_delta(actual_status)
                     if node_status:
                             return {"iteration": 0, "status": actual_status.copy(),
@@ -85,7 +90,7 @@ class TimeAware(DiffusionModel):
                     Equation1= -Alpha*(Time1-Time)
                     Equation2= Alpha *(math.e**Equation1)
 
-                    print(Equation2)
+
 
                     flip = np.random.random_sample()
                     if(Equation2>=flip):
