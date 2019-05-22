@@ -89,7 +89,7 @@ class DiffAware(DiffusionModel):
                             flip = np.random.random_sample()
                             if(Equation2>=flip):
                                 actual_status[v]=1
-                                self.params['nodes']['Time'][v]=1
+                                self.params['nodes']['Time'][v]=Timing
                         else:
                             continue
                            
